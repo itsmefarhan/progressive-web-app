@@ -34,4 +34,14 @@ self.addEventListener("activate", event => {
 // Fetch event
 self.addEventListener("fetch", event => {
   // console.log("fetch event", event);
+  // match request with assets array
+  event.respondWith(
+    caches
+      .match(event.request)
+      .then(cacheRes => {
+        // if res found return it otherwise return original request
+        return cacheRes || fetch(event.request);
+      })
+      .catch()
+  );
 });
