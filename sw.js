@@ -1,5 +1,5 @@
 const staticCacheName = "site-cache-v1";
-const dyanamicCache = "site-dynamic-v1";
+const dyanamicCacheName = "site-dynamic-v1";
 const assets = [
   "/",
   "/index.html",
@@ -9,7 +9,8 @@ const assets = [
   "/css/styles.css",
   "/css/materialize.min.css",
   "/img/dish.png",
-  "https://fonts.googleapis.com/icon?family=Material+Icons"
+  "https://fonts.googleapis.com/icon?family=Material+Icons",
+  "/pages/fallback.html"
 ];
 
 // Install service worker
@@ -36,7 +37,7 @@ self.addEventListener("activate", event => {
         // pass array of promises, filter keys, keep same key and delete every other key
         return Promise.all(
           keys
-            .filter(key => key !== staticCacheName)
+            .filter(key => key !== staticCacheName && key !== dyanamicCacheName)
             .map(key => caches.delete(key))
         );
       })
@@ -57,16 +58,16 @@ self.addEventListener("fetch", event => {
           fetch(event.request)
             .then(fetchRes => {
               return caches
-                .open(dyanamicCache)
+                .open(dyanamicCacheName)
                 .then(cache => {
                   cache.put(event.request.url, fetchRes.clone());
                   return fetchRes;
                 })
-                .catch(err => "dynamic cache error", err);
+                // .catch(err => console.error("dynamic cache error", err));
             })
-            .catch(err => console.error("fetch new request error", err))
+            // .catch(err => console.error("fetch new request error", err))
         );
       })
-      .catch(err => console.error("fetch error", err))
+      .catch(() => caches.match("/pages/fallback.html"))
   );
 });
