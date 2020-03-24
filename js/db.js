@@ -20,3 +20,21 @@ db.collection("foodrecipes").onSnapshot(snapshot => {
     }
   });
 });
+
+// add recipe
+const form = document.querySelector("form");
+form.addEventListener("submit", event => {
+  event.preventDefault();
+
+  const recipe = {
+    title: form.title.value,
+    ingredients: form.ingredients.value
+  };
+
+  db.collection("foodrecipes")
+    .add(recipe)
+    .catch(err => console.error(err));
+
+  form.title.value = "";
+  form.ingredients.value = "";
+});
