@@ -1,4 +1,5 @@
 const staticCacheName = "site-cache-v1";
+const dyanamicCache = "site-dynamic-v1";
 const assets = [
   "/",
   "/index.html",
@@ -45,14 +46,26 @@ self.addEventListener("activate", event => {
 
 // Fetch event
 self.addEventListener("fetch", event => {
-  // console.log("fetch event", event);
   // match request with assets array
   event.respondWith(
     caches
       .match(event.request)
       .then(cacheRes => {
         // if res found return it otherwise return original request
-        return cacheRes || fetch(event.request);
+        return (
+          cacheRes ||
+          fetch(event.request)
+            .then(fetchRes => {
+              return caches
+                .open(dyanamicCache)
+                .then(cache => {
+                  cache.put(event.request.url, fetchRes.clone());
+                  return fetchRes;
+                })
+                .catch(err => "dynamic cache error", err);
+            })
+            .catch(err => console.error("fetch new request error", err))
+        );
       })
       .catch(err => console.error("fetch error", err))
   );
