@@ -55,19 +55,18 @@ self.addEventListener("fetch", event => {
         // if res found return it otherwise return original request
         return (
           cacheRes ||
-          fetch(event.request)
-            .then(fetchRes => {
-              return caches
-                .open(dyanamicCacheName)
-                .then(cache => {
-                  cache.put(event.request.url, fetchRes.clone());
-                  return fetchRes;
-                })
-                // .catch(err => console.error("dynamic cache error", err));
-            })
-            // .catch(err => console.error("fetch new request error", err))
+          fetch(event.request).then(fetchRes => {
+            return caches.open(dyanamicCacheName).then(cache => {
+              cache.put(event.request.url, fetchRes.clone());
+              return fetchRes;
+            });
+          })
         );
       })
-      .catch(() => caches.match("/pages/fallback.html"))
+      .catch(() => {
+        if (event.request.url.indexOf(".html") > -1) {
+          return caches.match("/pages/fallback.html");
+        }
+      })
   );
 });
