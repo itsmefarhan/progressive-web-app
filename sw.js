@@ -57,27 +57,29 @@ self.addEventListener("activate", event => {
 
 // Fetch event
 self.addEventListener("fetch", event => {
-  // match request with assets array
-  // event.respondWith(
-  //   caches
-  //     .match(event.request)
-  //     .then(cacheRes => {
-  //       // if res found return it otherwise return original request
-  //       return (
-  //         cacheRes ||
-  //         fetch(event.request).then(fetchRes => {
-  //           return caches.open(dyanamicCacheName).then(cache => {
-  //             cache.put(event.request.url, fetchRes.clone());
-  //             limitCacheSize(dyanamicCacheName, 15);
-  //             return fetchRes;
-  //           });
-  //         })
-  //       );
-  //     })
-  //     .catch(() => {
-  //       if (event.request.url.indexOf(".html") > -1) {
-  //         return caches.match("/pages/fallback.html");
-  //       }
-  //     })
-  // );
+  if (event.request.url.indexOf("firestore.googleapis.com") === -1) {
+    // match request with assets array
+    event.respondWith(
+      caches
+        .match(event.request)
+        .then(cacheRes => {
+          // if res found return it otherwise return original request
+          return (
+            cacheRes ||
+            fetch(event.request).then(fetchRes => {
+              return caches.open(dyanamicCacheName).then(cache => {
+                cache.put(event.request.url, fetchRes.clone());
+                limitCacheSize(dyanamicCacheName, 15);
+                return fetchRes;
+              });
+            })
+          );
+        })
+        .catch(() => {
+          if (event.request.url.indexOf(".html") > -1) {
+            return caches.match("/pages/fallback.html");
+          }
+        })
+    );
+  }
 });
