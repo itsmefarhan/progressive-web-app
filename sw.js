@@ -1,4 +1,4 @@
-const staticCacheName = "site-cache";
+const staticCacheName = "site-cache-v1";
 const assets = [
   "/",
   "/index.html",
@@ -22,13 +22,25 @@ self.addEventListener("install", event => {
         cache.addAll(assets);
         console.log("cached static resources");
       })
-      .catch(err => console.error(err))
+      .catch(err => console.error("cache resources error", err))
   );
 });
 
 // Listen for activate event
 self.addEventListener("activate", event => {
-  // console.log("service worker has been activated", event);
+  event.waitUntil(
+    caches
+      .keys()
+      .then(keys => {
+        // pass array of promises, filter keys, keep same key and delete every other key
+        return Promise.all(
+          keys
+            .filter(key => key !== staticCacheName)
+            .map(key => caches.delete(key))
+        );
+      })
+      .catch(err => console.error("keys error", err))
+  );
 });
 
 // Fetch event
@@ -42,6 +54,6 @@ self.addEventListener("fetch", event => {
         // if res found return it otherwise return original request
         return cacheRes || fetch(event.request);
       })
-      .catch()
+      .catch(err => console.error("fetch error", err))
   );
 });
